@@ -46,6 +46,23 @@ export class TodoList {
     return { ...todo };
   }
 
+  complete(id) {
+    return this.#setDone(id, true);
+  }
+
+  uncomplete(id) {
+    return this.#setDone(id, false);
+  }
+
+  #setDone(id, done) {
+    const todo = this.#todos.find((t) => t.id === id);
+    if (!todo) {
+      throw new Error('Todo not found');
+    }
+    todo.done = done;
+    return { ...todo };
+  }
+
   items() {
     return this.#todos.map((todo) => ({ ...todo }));
   }
