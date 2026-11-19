@@ -13,6 +13,7 @@ ok()   { printf '\033[1;32m✔ %s\033[0m\n' "$*"; }
 bad()  { printf '\033[1;31m✘ %s\033[0m\n' "$*"; }
 
 READ_ONLY=(--allowedTools "Read" "Glob" "Grep" "Bash(git diff:*)" "Bash(git log:*)")
+REVIEWER=("${READ_ONLY[@]}" "Bash(npm test)" "Bash(npm run acceptance)" "Bash(npm run guard)")
 BUILDER=(--permission-mode acceptEdits --allowedTools "Read" "Glob" "Grep" "Edit" "Write"
          "Bash(npm:*)" "Bash(node:*)" "Bash(git add:*)" "Bash(git commit:*)"
          "Bash(git status:*)" "Bash(git diff:*)")
@@ -29,6 +30,7 @@ ok "working on branch $BRANCH"
 step "1. PLAN  (agent reads the test and writes a task pack)"
 claude -p "Read CLAUDE.md, the existing code, and $FEATURE. Write a task pack in markdown with:
 Goal, Plan (small numbered steps), Files you may touch, Files you must not touch, Done when.
+Do not list tasks/ or reviews/ under "must not touch" (the loop commits those).
 Output only the markdown." "${READ_ONLY[@]}" > "tasks/$NAME.md"
 cat "tasks/$NAME.md"
 git add "tasks/$NAME.md" && git commit -qm "docs: task pack for $NAME"
@@ -56,8 +58,9 @@ Run npm test and npm run acceptance until green, then commit. $FEEDBACK" "${BUIL
   claude -p "You are a strict senior reviewer. Review the output of 'git diff main...HEAD'
 against CLAUDE.md, tasks/$NAME.md and $FEATURE. Check correctness, edge cases, missing or
 weak tests, files outside the allowed list, and that acceptance/features is untouched.
+Run npm test, npm run acceptance and npm run guard yourself and include the results.
 List issues by severity (critical, major, minor). Minor-only issues can still be approved.
-The last line must be exactly: VERDICT: APPROVE  or  VERDICT: CHANGES" "${READ_ONLY[@]}" > "reviews/$NAME.md"
+The last line must be exactly: VERDICT: APPROVE  or  VERDICT: CHANGES" "${REVIEWER[@]}" > "reviews/$NAME.md"
   cat "reviews/$NAME.md"
   if grep -q "VERDICT: APPROVE" "reviews/$NAME.md"; then ok "reviewer approved"; APPROVED=1; break; fi
   bad "reviewer asked for changes"
@@ -87,8 +90,12 @@ gh pr merge "$BRANCH" --squash --delete-branch
 git checkout -q main && git pull -q
 
 step "9. DEPLOY  (CD to GitHub Pages)"
-sleep 10
-RUN_ID=$(gh run list --workflow deploy.yml --branch main --limit 1 --json databaseId -q '.[0].databaseId')
+SHA=$(git rev-parse HEAD); RUN_ID=""
+echo "waiting for the deploy of $SHA ..."
+until [ -n "$RUN_ID" ]; do
+  sleep 5
+  RUN_ID=$(gh run list --workflow deploy.yml --commit "$SHA" --limit 1 --json databaseId -q '.[0].databaseId')
+done
 gh run watch "$RUN_ID" --exit-status > /dev/null
 URL=$(gh api "repos/{owner}/{repo}/pages" -q .html_url)
 ok "Live at $URL"
