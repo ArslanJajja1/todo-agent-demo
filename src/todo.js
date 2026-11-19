@@ -38,6 +38,10 @@ export class TodoList {
     if (!todo) {
       throw new Error('Todo not found');
     }
+    const key = this.#key(trimmed);
+    if (this.#todos.some((t) => t.id !== id && this.#key(t.text) === key)) {
+      throw new Error('Todo already exists');
+    }
     todo.text = trimmed;
     return { ...todo };
   }
