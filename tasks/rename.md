@@ -1,10 +1,3 @@
-I couldn't save the task pack: writing to `tasks/rename.md`, which is currently empty and untracked, needs your permission. Here's the full content. Approve the write and I'll save it, or paste it in yourself.
-
-I read `CLAUDE.md`, `src/todo.js`, `web/app.js`, `web/index.html`, both step files, `rename.feature` and `tasks/delete.md`, and kept the same format as `tasks/delete.md`. There's no README in the repo. Following your instruction, `tasks/` and `reviews/` are not under "must not touch".
-
----
-
-```markdown
 # Task pack: Rename a todo
 
 ## Goal
@@ -73,11 +66,3 @@ All existing unit and acceptance tests (`basics.feature`, `delete.feature`) must
 - [ ] No new dependencies were added.
 - [ ] Commits are small and use conventional messages.
 - [ ] The output of `npm test` and `npm run acceptance` is pasted in the final report.
-```
-
----
-
-**Decisions to check:**
-- **Shared step:** The feature reuses the `Given a todo list with … and …` step that already exists in `delete.steps.js`. So the pack says to reuse that step and protects `delete.steps.js`, because defining it again would make Cucumber fail.
-- **Two cases the feature doesn't cover:** I added them so the code fails safely. An unknown id throws `Todo not found`, the same as `remove`. Text that is only spaces is treated as empty, the same as `add`.
-- **Web page design:** Renaming happens inline (click Rename, edit in place, Enter saves, Escape cancels) rather than in a `prompt()` pop-up. If you'd prefer a simpler version for the demo, step 5 can be cut down.
