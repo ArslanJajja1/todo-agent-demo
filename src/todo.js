@@ -12,6 +12,15 @@ export class TodoList {
     return { ...todo };
   }
 
+  remove(id) {
+    const index = this.#todos.findIndex((todo) => todo.id === id);
+    if (index === -1) {
+      throw new Error('Todo not found');
+    }
+    const [removed] = this.#todos.splice(index, 1);
+    return { ...removed };
+  }
+
   items() {
     return this.#todos.map((todo) => ({ ...todo }));
   }
