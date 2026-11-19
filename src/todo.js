@@ -2,10 +2,18 @@ export class TodoList {
   #todos = [];
   #nextId = 1;
 
+  #key(text) {
+    return String(text).trim().replace(/\s+/g, ' ').toLowerCase();
+  }
+
   add(text) {
     const trimmed = String(text ?? '').trim();
     if (trimmed === '') {
       throw new Error('Todo text cannot be empty');
+    }
+    const key = this.#key(trimmed);
+    if (this.#todos.some((t) => this.#key(t.text) === key)) {
+      throw new Error('Todo already exists');
     }
     const todo = { id: this.#nextId++, text: trimmed, done: false };
     this.#todos.push(todo);
