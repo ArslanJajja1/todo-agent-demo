@@ -13,8 +13,28 @@ function render() {
   listEl.replaceChildren(
     ...items.map((todo) => {
       const li = document.createElement('li');
-      li.textContent = todo.text;
       li.classList.toggle('done', todo.done);
+
+      const text = document.createElement('span');
+      text.className = 'todo-text';
+      text.textContent = todo.text;
+
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'delete';
+      del.textContent = 'Delete';
+      del.setAttribute('aria-label', `Delete "${todo.text}"`);
+      del.addEventListener('click', () => {
+        try {
+          list.remove(todo.id);
+          error.textContent = '';
+          render();
+        } catch (err) {
+          error.textContent = err.message;
+        }
+      });
+
+      li.append(text, del);
       return li;
     }),
   );
