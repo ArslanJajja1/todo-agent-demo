@@ -21,6 +21,19 @@ export class TodoList {
     return { ...removed };
   }
 
+  rename(id, text) {
+    const trimmed = String(text ?? '').trim();
+    if (trimmed === '') {
+      throw new Error('Todo text cannot be empty');
+    }
+    const todo = this.#todos.find((t) => t.id === id);
+    if (!todo) {
+      throw new Error('Todo not found');
+    }
+    todo.text = trimmed;
+    return { ...todo };
+  }
+
   items() {
     return this.#todos.map((todo) => ({ ...todo }));
   }
