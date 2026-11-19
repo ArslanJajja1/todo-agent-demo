@@ -52,3 +52,54 @@ test('items returns copies that cannot mutate the list', () => {
   assert.equal(list.items()[0].done, false);
   assert.equal(list.size, 1);
 });
+
+test('remove deletes the right todo and keeps the order of the rest', () => {
+  const list = new TodoList();
+  list.add('first');
+  const second = list.add('second');
+  list.add('third');
+  list.remove(second.id);
+  assert.deepEqual(list.items().map((t) => t.text), ['first', 'third']);
+});
+
+test('remove returns the deleted todo', () => {
+  const list = new TodoList();
+  const todo = list.add('Buy milk');
+  assert.deepEqual(list.remove(todo.id), todo);
+});
+
+test('remove with an unknown id throws and leaves the list unchanged', () => {
+  const list = new TodoList();
+  list.add('Buy milk');
+  const before = list.items();
+  assert.throws(() => list.remove(999), { message: 'Todo not found' });
+  assert.deepEqual(list.items(), before);
+});
+
+test('remove on an empty list throws', () => {
+  const list = new TodoList();
+  assert.throws(() => list.remove(1), { message: 'Todo not found' });
+});
+
+test('remove by id leaves another todo with the same text', () => {
+  const list = new TodoList();
+  const a = list.add('Buy milk');
+  const b = list.add('Buy milk');
+  list.remove(a.id);
+  assert.deepEqual(list.items(), [b]);
+});
+
+test('removing the same id twice throws on the second call', () => {
+  const list = new TodoList();
+  const todo = list.add('Buy milk');
+  list.remove(todo.id);
+  assert.throws(() => list.remove(todo.id), { message: 'Todo not found' });
+});
+
+test('size goes down after a remove', () => {
+  const list = new TodoList();
+  const todo = list.add('a');
+  list.add('b');
+  list.remove(todo.id);
+  assert.equal(list.size, 1);
+});
