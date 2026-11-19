@@ -253,3 +253,78 @@ test('rename a todo to its own text with different capitals', () => {
   assert.equal(list.rename(todo.id, 'Buy Milk').text, 'Buy Milk');
   assert.deepEqual(list.items(), [{ ...todo, text: 'Buy Milk' }]);
 });
+
+test('complete sets done to true and returns the updated todo', () => {
+  const list = new TodoList();
+  const todo = list.add('Buy milk');
+  assert.deepEqual(list.complete(todo.id), { ...todo, done: true });
+  assert.equal(list.items()[0].done, true);
+});
+
+test('complete keeps id, text and order and leaves other todos alone', () => {
+  const list = new TodoList();
+  const a = list.add('Buy milk');
+  const b = list.add('Call mom');
+  const c = list.add('Walk dog');
+  list.complete(b.id);
+  assert.deepEqual(list.items(), [a, { ...b, done: true }, c]);
+});
+
+test('complete twice leaves the todo done', () => {
+  const list = new TodoList();
+  const todo = list.add('Buy milk');
+  list.complete(todo.id);
+  assert.equal(list.complete(todo.id).done, true);
+  assert.equal(list.items()[0].done, true);
+});
+
+test('uncomplete sets a done todo back to not done', () => {
+  const list = new TodoList();
+  const todo = list.add('Buy milk');
+  list.complete(todo.id);
+  assert.deepEqual(list.uncomplete(todo.id), todo);
+  assert.deepEqual(list.items(), [todo]);
+});
+
+test('uncomplete on a todo that is not done leaves it not done', () => {
+  const list = new TodoList();
+  const todo = list.add('Buy milk');
+  assert.equal(list.uncomplete(todo.id).done, false);
+  assert.deepEqual(list.items(), [todo]);
+});
+
+for (const method of ['complete', 'uncomplete']) {
+  for (const id of [999, undefined]) {
+    test(`${method} with unknown id ${id} throws and leaves the list unchanged`, () => {
+      const list = new TodoList();
+      const todo = list.add('Buy milk');
+      list.complete(todo.id);
+      const before = list.items();
+      assert.throws(() => list[method](id), { message: 'Todo not found' });
+      assert.deepEqual(list.items(), before);
+    });
+  }
+}
+
+test('size and countLabel do not change after complete or uncomplete', () => {
+  const list = new TodoList();
+  const todo = list.add('Buy milk');
+  list.add('Call mom');
+  list.complete(todo.id);
+  assert.equal(list.size, 2);
+  assert.equal(list.countLabel(), '2 todos');
+  list.uncomplete(todo.id);
+  assert.equal(list.size, 2);
+  assert.equal(list.countLabel(), '2 todos');
+});
+
+test('changing done on returned copies does not change the list', () => {
+  const list = new TodoList();
+  const todo = list.add('Buy milk');
+  list.items()[0].done = true;
+  assert.equal(list.items()[0].done, false);
+  list.complete(todo.id).done = false;
+  assert.equal(list.items()[0].done, true);
+  list.uncomplete(todo.id).done = true;
+  assert.equal(list.items()[0].done, false);
+});
