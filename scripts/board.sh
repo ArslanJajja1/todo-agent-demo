@@ -7,10 +7,11 @@ STEPS=("Acceptance test" "Plan" "Red" "Build" "Verify" "Review"
 WHO=("you" "agent" "script" "agent" "script" "agent" "github" "github" "me" "github" "agent")
 printf '\033[2J'
 while true; do
-  out="$(printf '\033[1;36m AGENTIC LOOP\033[0m  \033[1m%s\033[0m' "$(cat .loop/feature 2>/dev/null || echo 'waiting…')")"$'\n\n'
+  cols=$(tput cols 2>/dev/null || echo 80); max=$(( cols - 34 )); [ $max -lt 10 ] && max=10
+  out="$(printf '\033[1;36m AGENTIC LOOP\033[0m  \033[1m%s\033[0m' "$(cat .loop/feature 2>/dev/null || echo 'waiting…')")\033[K"$'\n\033[K\n'
   for i in "${!STEPS[@]}"; do
     line=$(grep "^$i|" .loop/status 2>/dev/null | tail -1)
-    state=$(echo "$line" | cut -d'|' -f2); note=$(echo "$line" | cut -d'|' -f3-)
+    state=$(echo "$line" | cut -d'|' -f2); note=$(echo "$line" | cut -d'|' -f3-); note="${note:0:$max}"
     case "$state" in
       run)  ic='\033[1;33m▶' ;;
       done) ic='\033[1;32m✔' ;;

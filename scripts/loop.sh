@@ -37,7 +37,7 @@ run_agent() {
 }
 
 : > .loop/status; echo "$NAME" > .loop/feature
-mark 0 done "$FEATURE"
+mark 0 done "$NAME.feature"
 
 step "0. START  $FEATURE"
 git checkout -q main && git pull -q --ff-only
