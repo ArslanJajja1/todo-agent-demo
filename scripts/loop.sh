@@ -23,9 +23,13 @@ run_agent() {
   [ -f ".loop/pane.$2" ] && pane="$(cat ".loop/pane.$2")"
   rm -f ".loop/$stage.exit" ".loop/$stage.out"
   if [ -n "$pane" ] && [ -n "${HERDR_ENV:-}" ]; then
-    herdr pane run "$pane" "IN_PANE=1 ./scripts/agent.sh $stage" > /dev/null
-    printf '   ↳ %s agent working live in pane %s …\n' "$stage" "$pane"
-    until [ -f ".loop/$stage.exit" ]; do sleep 2; done
+    if herdr pane run "$pane" "IN_PANE=1 ./scripts/agent.sh $stage" > /dev/null 2>&1; then
+      printf '   ↳ %s agent working live in pane %s …\n' "$stage" "$pane"
+      until [ -f ".loop/$stage.exit" ]; do sleep 2; done
+    else
+      printf '   ↳ pane %s not found, running %s here\n' "$pane" "$stage"
+      ./scripts/agent.sh "$stage"
+    fi
   else
     ./scripts/agent.sh "$stage"
   fi
