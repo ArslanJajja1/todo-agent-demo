@@ -13,7 +13,7 @@ ok()   { printf '\033[1;32m✔ %s\033[0m\n' "$*"; }
 bad()  { printf '\033[1;31m✘ %s\033[0m\n' "$*"; }
 
 READ_ONLY=(--allowedTools "Read" "Glob" "Grep" "Bash(git diff:*)" "Bash(git log:*)")
-REVIEWER=("${READ_ONLY[@]}" "Bash(npm test)" "Bash(npm run acceptance)" "Bash(npm run guard)")
+REVIEWER=("${READ_ONLY[@]}" "Bash(npm test)" "Bash(npm run acceptance)" "Bash(npm run guard)" "Bash(npm run build)")
 BUILDER=(--permission-mode acceptEdits --allowedTools "Read" "Glob" "Grep" "Edit" "Write"
          "Bash(npm:*)" "Bash(node:*)" "Bash(git add:*)" "Bash(git commit:*)"
          "Bash(git status:*)" "Bash(git diff:*)")
@@ -31,7 +31,13 @@ step "1. PLAN  (agent reads the test and writes a task pack)"
 claude -p "Read CLAUDE.md, the existing code, and $FEATURE. Write a task pack in markdown with:
 Goal, Plan (small numbered steps), Files you may touch, Files you must not touch, Done when.
 Do not list tasks/ or reviews/ under "must not touch" (the loop commits those).
-Output only the markdown." "${READ_ONLY[@]}" > "tasks/$NAME.md"
+Do NOT try to write or save any file. Print ONLY the task pack to stdout:
+start with the line '# Task pack: <name>', no code fences, no comments before or after." \
+  "${READ_ONLY[@]}" > .loop/plan.raw
+# keep only the task pack: from '# Task pack' onward, drop code fences and any trailing chat
+sed -n '/^# Task pack/,$p' .loop/plan.raw | grep -v '^```' \
+  | sed '/^---$/,$d; /^\*\*Decisions/,$d' > "tasks/$NAME.md"
+[ -s "tasks/$NAME.md" ] || { bad "planner did not produce a task pack"; cat .loop/plan.raw; exit 1; }
 cat "tasks/$NAME.md"
 git add "tasks/$NAME.md" && git commit -qm "docs: task pack for $NAME"
 
