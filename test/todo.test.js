@@ -81,10 +81,10 @@ test('remove on an empty list throws', () => {
   assert.throws(() => list.remove(1), { message: 'Todo not found' });
 });
 
-test('remove by id leaves another todo with the same text', () => {
+test('remove by id leaves the other todos alone', () => {
   const list = new TodoList();
   const a = list.add('Buy milk');
-  const b = list.add('Buy milk');
+  const b = list.add('Call mom');
   list.remove(a.id);
   assert.deepEqual(list.items(), [b]);
 });
@@ -146,10 +146,10 @@ test('rename with an unknown id throws and leaves the list unchanged', () => {
   assert.deepEqual(list.items(), before);
 });
 
-test('rename by id leaves another todo with the same text', () => {
+test('rename by id leaves the other todos alone', () => {
   const list = new TodoList();
   const a = list.add('Buy milk');
-  const b = list.add('Buy milk');
+  const b = list.add('Call mom');
   list.rename(a.id, 'Buy bread');
   assert.deepEqual(list.items(), [{ ...a, text: 'Buy bread' }, b]);
 });
@@ -194,4 +194,62 @@ test('countLabel does not change after a failed add', () => {
   list.add('Buy milk');
   assert.throws(() => list.add(''));
   assert.equal(list.countLabel(), '1 todo');
+});
+
+test('add rejects the exact same text twice', () => {
+  const list = new TodoList();
+  list.add('Buy milk');
+  assert.throws(() => list.add('Buy milk'), { message: 'Todo already exists' });
+  assert.equal(list.size, 1);
+});
+
+for (const dup of ['  buy MILK ', 'Buy   milk']) {
+  test(`add rejects ${JSON.stringify(dup)} as a duplicate of "Buy milk"`, () => {
+    const list = new TodoList();
+    list.add('Buy milk');
+    assert.throws(() => list.add(dup), { message: 'Todo already exists' });
+    assert.equal(list.size, 1);
+  });
+}
+
+test('a failed duplicate add leaves the list unchanged and does not use up an id', () => {
+  const list = new TodoList();
+  const first = list.add('Buy milk');
+  const before = list.items();
+  assert.throws(() => list.add('BUY MILK'), { message: 'Todo already exists' });
+  assert.deepEqual(list.items(), before);
+  assert.equal(list.add('Call mom').id, first.id + 1);
+});
+
+test('add accepts the text of a removed todo', () => {
+  const list = new TodoList();
+  const todo = list.add('Buy milk');
+  list.remove(todo.id);
+  assert.equal(list.add('Buy milk').text, 'Buy milk');
+  assert.equal(list.size, 1);
+});
+
+test('add accepts texts that are similar but different', () => {
+  const list = new TodoList();
+  list.add('Buy milk');
+  list.add('Buy milks');
+  assert.equal(list.size, 2);
+});
+
+for (const dup of ['Buy milk', 'BUY MILK', '  buy   milk ']) {
+  test(`rename to ${JSON.stringify(dup)} is rejected when another todo has that text`, () => {
+    const list = new TodoList();
+    list.add('Buy milk');
+    const other = list.add('Call mom');
+    const before = list.items();
+    assert.throws(() => list.rename(other.id, dup), { message: 'Todo already exists' });
+    assert.deepEqual(list.items(), before);
+  });
+}
+
+test('rename a todo to its own text with different capitals', () => {
+  const list = new TodoList();
+  const todo = list.add('Buy milk');
+  assert.equal(list.rename(todo.id, 'Buy Milk').text, 'Buy Milk');
+  assert.deepEqual(list.items(), [{ ...todo, text: 'Buy Milk' }]);
 });
