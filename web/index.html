@@ -93,7 +93,16 @@
     button.delete:hover { color: var(--error); border-color: var(--error); background: transparent; }
     button.rename:hover { color: var(--accent); border-color: var(--accent); background: transparent; }
     .rename-input { padding: 4px 8px; }
-    li.done { color: var(--muted); text-decoration: line-through; }
+    input.todo-check {
+      flex: none;
+      width: 18px;
+      height: 18px;
+      margin: 0;
+      padding: 0;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+    li.done .todo-text { color: var(--muted); text-decoration: line-through; }
     .count { margin: 8px 0 0; color: var(--muted); font-size: 0.875rem; }
     .empty { margin: 8px 0 0; color: var(--muted); text-align: center; }
   </style>

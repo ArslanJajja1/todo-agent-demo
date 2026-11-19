@@ -16,6 +16,25 @@ function render() {
       const li = document.createElement('li');
       li.classList.toggle('done', todo.done);
 
+      const check = document.createElement('input');
+      check.type = 'checkbox';
+      check.className = 'todo-check';
+      check.checked = todo.done;
+      check.setAttribute('aria-label', `Mark "${todo.text}" as done`);
+      check.addEventListener('change', () => {
+        try {
+          if (check.checked) {
+            list.complete(todo.id);
+          } else {
+            list.uncomplete(todo.id);
+          }
+          error.textContent = '';
+          render();
+        } catch (err) {
+          error.textContent = err.message;
+        }
+      });
+
       const text = document.createElement('span');
       text.className = 'todo-text';
       text.textContent = todo.text;
@@ -42,7 +61,7 @@ function render() {
       rename.setAttribute('aria-label', `Rename "${todo.text}"`);
       rename.addEventListener('click', () => startRename(li, text, todo));
 
-      li.append(text, rename, del);
+      li.append(check, text, rename, del);
       return li;
     }),
   );
