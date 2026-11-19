@@ -56,7 +56,7 @@ function startRename(li, textEl, todo) {
   edit.setAttribute('aria-label', `New text for "${todo.text}"`);
 
   let finished = false;
-  const save = () => {
+  const save = ({ refocus = false } = {}) => {
     if (finished) return;
     try {
       list.rename(todo.id, edit.value);
@@ -65,7 +65,7 @@ function startRename(li, textEl, todo) {
       render();
     } catch (err) {
       error.textContent = err.message;
-      edit.focus();
+      if (refocus) edit.focus();
     }
   };
   const cancel = () => {
@@ -77,13 +77,13 @@ function startRename(li, textEl, todo) {
   edit.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') {
       event.preventDefault();
-      save();
+      save({ refocus: true });
     } else if (event.key === 'Escape') {
       event.preventDefault();
       cancel();
     }
   });
-  edit.addEventListener('blur', save);
+  edit.addEventListener('blur', () => save());
 
   li.replaceChild(edit, textEl);
   edit.focus();
