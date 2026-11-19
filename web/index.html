@@ -94,6 +94,7 @@
     button.rename:hover { color: var(--accent); border-color: var(--accent); background: transparent; }
     .rename-input { padding: 4px 8px; }
     li.done { color: var(--muted); text-decoration: line-through; }
+    .count { margin: 8px 0 0; color: var(--muted); font-size: 0.875rem; }
     .empty { margin: 8px 0 0; color: var(--muted); text-align: center; }
   </style>
 </head>
@@ -106,6 +107,7 @@
     </form>
     <p id="error" class="error" role="alert"></p>
     <ul id="todo-list"></ul>
+    <p id="count" class="count" aria-live="polite"></p>
     <p id="empty" class="empty">Nothing to do yet.</p>
   </main>
   <script type="module" src="app.js"></script>

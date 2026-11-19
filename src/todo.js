@@ -41,4 +41,8 @@ export class TodoList {
   get size() {
     return this.#todos.length;
   }
+
+  countLabel() {
+    return `${this.size} ${this.size === 1 ? 'todo' : 'todos'}`;
+  }
 }

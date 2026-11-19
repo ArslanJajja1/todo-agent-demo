@@ -161,3 +161,37 @@ test('size does not change after a rename', () => {
   list.rename(todo.id, 'c');
   assert.equal(list.size, 2);
 });
+
+test('countLabel on an empty list is "0 todos"', () => {
+  assert.equal(new TodoList().countLabel(), '0 todos');
+});
+
+test('countLabel with one todo is "1 todo"', () => {
+  const list = new TodoList();
+  list.add('Buy milk');
+  assert.equal(list.countLabel(), '1 todo');
+});
+
+test('countLabel with two todos is "2 todos"', () => {
+  const list = new TodoList();
+  list.add('Buy milk');
+  list.add('Call mom');
+  assert.equal(list.countLabel(), '2 todos');
+});
+
+test('countLabel updates after add and remove', () => {
+  const list = new TodoList();
+  const todo = list.add('a');
+  assert.equal(list.countLabel(), '1 todo');
+  list.add('b');
+  assert.equal(list.countLabel(), '2 todos');
+  list.remove(todo.id);
+  assert.equal(list.countLabel(), '1 todo');
+});
+
+test('countLabel does not change after a failed add', () => {
+  const list = new TodoList();
+  list.add('Buy milk');
+  assert.throws(() => list.add(''));
+  assert.equal(list.countLabel(), '1 todo');
+});

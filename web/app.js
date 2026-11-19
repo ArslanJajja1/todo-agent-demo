@@ -7,6 +7,7 @@ const input = document.getElementById('todo-input');
 const error = document.getElementById('error');
 const listEl = document.getElementById('todo-list');
 const empty = document.getElementById('empty');
+const count = document.getElementById('count');
 
 function render() {
   const items = list.items();
@@ -46,6 +47,7 @@ function render() {
     }),
   );
   empty.hidden = items.length > 0;
+  count.textContent = list.countLabel();
 }
 
 function startRename(li, textEl, todo) {
