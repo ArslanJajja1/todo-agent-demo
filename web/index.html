@@ -82,7 +82,7 @@
     li:last-child { border-bottom: 0; }
     li { display: flex; align-items: center; gap: 8px; }
     .todo-text { flex: 1; min-width: 0; }
-    button.delete {
+    button.delete, button.rename {
       padding: 4px 10px;
       font-size: 0.875rem;
       font-weight: 500;
@@ -91,6 +91,8 @@
       border: 1px solid var(--border);
     }
     button.delete:hover { color: var(--error); border-color: var(--error); background: transparent; }
+    button.rename:hover { color: var(--accent); border-color: var(--accent); background: transparent; }
+    .rename-input { padding: 4px 8px; }
     li.done { color: var(--muted); text-decoration: line-through; }
     .empty { margin: 8px 0 0; color: var(--muted); text-align: center; }
   </style>

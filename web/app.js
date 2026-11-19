@@ -34,11 +34,60 @@ function render() {
         }
       });
 
-      li.append(text, del);
+      const rename = document.createElement('button');
+      rename.type = 'button';
+      rename.className = 'rename';
+      rename.textContent = 'Rename';
+      rename.setAttribute('aria-label', `Rename "${todo.text}"`);
+      rename.addEventListener('click', () => startRename(li, text, todo));
+
+      li.append(text, rename, del);
       return li;
     }),
   );
   empty.hidden = items.length > 0;
+}
+
+function startRename(li, textEl, todo) {
+  const edit = document.createElement('input');
+  edit.type = 'text';
+  edit.className = 'rename-input';
+  edit.value = todo.text;
+  edit.setAttribute('aria-label', `New text for "${todo.text}"`);
+
+  let finished = false;
+  const save = ({ refocus = false } = {}) => {
+    if (finished) return;
+    try {
+      list.rename(todo.id, edit.value);
+      finished = true;
+      error.textContent = '';
+      render();
+    } catch (err) {
+      error.textContent = err.message;
+      if (refocus) edit.focus();
+    }
+  };
+  const cancel = () => {
+    finished = true;
+    error.textContent = '';
+    render();
+  };
+
+  edit.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      save({ refocus: true });
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      cancel();
+    }
+  });
+  edit.addEventListener('blur', () => save());
+
+  li.replaceChild(edit, textEl);
+  edit.focus();
+  edit.select();
 }
 
 form.addEventListener('submit', (event) => {

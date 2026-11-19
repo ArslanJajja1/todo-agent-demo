@@ -103,3 +103,61 @@ test('size goes down after a remove', () => {
   list.remove(todo.id);
   assert.equal(list.size, 1);
 });
+
+test('rename changes the text and returns the updated todo', () => {
+  const list = new TodoList();
+  const todo = list.add('Buy milk');
+  const renamed = list.rename(todo.id, 'Buy bread');
+  assert.deepEqual(renamed, { ...todo, text: 'Buy bread' });
+  assert.equal(list.items()[0].text, 'Buy bread');
+});
+
+test('rename keeps the id, done value and order', () => {
+  const list = new TodoList();
+  list.add('first');
+  const second = list.add('second');
+  list.add('third');
+  list.rename(second.id, 'middle');
+  assert.deepEqual(list.items().map((t) => t.text), ['first', 'middle', 'third']);
+  assert.deepEqual(list.items()[1], { id: second.id, text: 'middle', done: false });
+});
+
+test('rename trims surrounding whitespace', () => {
+  const list = new TodoList();
+  const todo = list.add('Buy milk');
+  assert.equal(list.rename(todo.id, '  Buy bread  ').text, 'Buy bread');
+});
+
+for (const bad of ['', '   ', undefined, null]) {
+  test(`rename rejects ${JSON.stringify(bad)} and leaves the list unchanged`, () => {
+    const list = new TodoList();
+    const todo = list.add('Buy milk');
+    const before = list.items();
+    assert.throws(() => list.rename(todo.id, bad), { message: 'Todo text cannot be empty' });
+    assert.deepEqual(list.items(), before);
+  });
+}
+
+test('rename with an unknown id throws and leaves the list unchanged', () => {
+  const list = new TodoList();
+  list.add('Buy milk');
+  const before = list.items();
+  assert.throws(() => list.rename(999, 'x'), { message: 'Todo not found' });
+  assert.deepEqual(list.items(), before);
+});
+
+test('rename by id leaves another todo with the same text', () => {
+  const list = new TodoList();
+  const a = list.add('Buy milk');
+  const b = list.add('Buy milk');
+  list.rename(a.id, 'Buy bread');
+  assert.deepEqual(list.items(), [{ ...a, text: 'Buy bread' }, b]);
+});
+
+test('size does not change after a rename', () => {
+  const list = new TodoList();
+  const todo = list.add('a');
+  list.add('b');
+  list.rename(todo.id, 'c');
+  assert.equal(list.size, 2);
+});
