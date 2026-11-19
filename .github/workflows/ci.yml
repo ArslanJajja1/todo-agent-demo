@@ -1,0 +1,21 @@
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm ci
+      - run: npm test
+      - run: npm run acceptance
+      - name: Guard acceptance tests
+        if: github.event_name == 'pull_request'
+        env:
+          ACCEPTANCE_APPROVED: ${{ contains(github.event.pull_request.labels.*.name, 'acceptance-approved') && '1' || '0' }}
+        run: ./scripts/guard-acceptance.sh origin/${{ github.base_ref }}
